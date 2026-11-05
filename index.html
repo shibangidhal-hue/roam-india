@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover destinations, holiday packages and hotels across India with Roam India.">
+  <title>Roam India | Discover more of India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+</head>
+<body>
+
+  <div class="topline">Your next great Indian journey starts here <span>✦</span> Thoughtfully curated trips</div>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Roam India home">
+      <span class="brand-mark">r</span>
+      <span>roam<span class="brand-light">india</span><small>TRAVEL, YOUR WAY</small></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button>
+    <nav id="mainNav">
+      <a href="#destinations">Destinations</a>
+<a href="#packages">Holiday packages</a>
+<a href="#hotels">Hotels</a>
+<a href="#coins">Roam Coins</a>
+<a href="#coupons">Coupons</a>
+<a href="#why-us">Why Roam India</a>
+      
+    </nav>
+    <div class="header-actions">
+      <button class="text-button" id="myBookingsBtn">My bookings <span id="bookingCount" class="count">0</span></button>
+      <button class="button button-dark button-small" id="accountBtn">Sign in</button>
+      <a class="button button-dark button-small" href="#explore">Plan a trip ↗</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <div class="eyebrow"><span></span> MADE FOR THE CURIOUS</div>
+        <h1>India is calling.<br><em>Go feel it.</em></h1>
+        <p>From Himalayan mornings to slow coastal sunsets, find a journey that feels like yours.</p>
+        <a class="button button-cream" href="#explore">Find your kind of India ↓</a>
+      </div>
+      <div class="hero-note"><span>✳</span><div><b>One country,</b><br>infinite stories.</div></div>
+      <div class="hero-pagination"><b>01</b><span></span> 04</div>
+    </section>
+
+    <section class="search-wrap" id="explore">
+      <div class="search-tabs">
+        <button type="button" class="active" data-mode="packages">✦ Holiday packages</button>
+        <button type="button" data-mode="destinations">⌖ Explore places</button>
+      </div>
+      <form id="searchForm" class="search-panel">
+        <label class="search-field">
+          <span>WHERE TO?</span>
+          <div class="field-line">⌖ <input id="destinationInput" placeholder="City, state or experience" autocomplete="off"></div>
+        </label>
+        <label class="search-field">
+          <span>TRAVELLERS</span>
+          <div class="field-line">♙
+            <select id="travellers">
+              <option value="1">1 traveller</option>
+              <option value="2" selected>2 travellers</option>
+              <option value="3">3 travellers</option>
+              <option value="4">4 travellers</option>
+              <option value="5">5 travellers</option>
+              <option value="6">6 travellers</option>
+            </select>
+          </div>
+        </label>
+        <label class="search-field">
+          <span>YOUR BUDGET</span>
+          <div class="field-line">₹
+            <select id="budget">
+              <option value="all">Any budget</option>
+              <option value="10000">Under ₹10,000</option>
+              <option value="20000">Under ₹20,000</option>
+              <option value="35000">Under ₹35,000</option>
+            </select>
+          </div>
+        </label>
+        <button class="button button-orange search-submit" type="submit">Search journeys →</button>
+      </form>
+      <p class="search-hint" id="searchHint">Popular searches: Goa · Kashmir · Kerala · Rajasthan</p>
+    </section>
+
+    <section class="section destinations-section" id="destinations">
+      <div class="section-heading">
+        <div><div class="eyebrow dark-eyebrow">A LITTLE INSPIRATION</div><h2>Places that stay<br><em>with you.</em></h2></div>
+        <p>Find your next favourite place, from mountain air and cultural wonders to a little time by the sea.</p>
+      </div>
+      <div class="destination-grid" id="destinationGrid"></div>
+      <div class="center-action">
+        <button class="button button-outline" id="showAllDestinations" type="button">Explore all destinations ↗</button>
+      </div>
+    </section>
+
+<section id="location-section" class="location-section">
+  <h2>Explore Near You</h2>
+  <p>Discover hotels and attractions around your current location.</p>
+
+  <button id="detectLocationBtn" type="button">
+    📍 Detect My Location
+  </button>
+
+  <p id="locationMessage" role="status">
+    Click the button to find your location.
+  </p>
+
+  <div id="locationMap"></div>
+
+  <h3>Nearby Places</h3>
+  <div id="nearbyPlaces"></div>
+</section>
+
+
+    <section class="package-section" id="packages">
+      <div class="section package-heading">
+        <div><div class="eyebrow dark-eyebrow">GOOD TRIPS, LESS GUESSWORK</div><h2>Made for your<br><em>next chapter.</em></h2></div>
+        <div class="package-controls">
+          <button type="button" class="chip active" data-filter="all">All trips</button>
+          <button type="button" class="chip" data-filter="beach">Beach</button>
+          <button type="button" class="chip" data-filter="culture">Culture</button>
+          <button type="button" class="chip" data-filter="nature">Nature</button>
+        </div>
+      </div>
+      <div class="package-grid" id="packageGrid"></div>
+    </section>
+
+    <section class="section" id="hotels">
+      <div class="section-heading">
+        <div><div class="eyebrow dark-eyebrow">STAYS WORTH THE STOP</div><h2>Find your place<br><em>to settle in.</em></h2></div>
+        <p>Browse sample stays across India. Prices and ratings shown here are illustrative demo data.</p>
+      </div>
+      <div class="hotel-search-tools">
+        <input id="hotelSearchInput" type="search" placeholder="Search hotel or destination">
+        <select id="hotelPriceFilter" aria-label="Maximum nightly price">
+          <option value="all">Any nightly price</option>
+          <option value="3000">Up to ₹3,000</option>
+          <option value="5000">Up to ₹5,000</option>
+          <option value="8000">Up to ₹8,000</option>
+        </select>
+        <button class="button button-orange" id="hotelSearchButton" type="button">Search stays</button>
+      </div>
+      <div class="package-controls hotel-filters">
+        <button class="chip active" type="button" data-hotel-filter="all">All stays</button>
+        <button class="chip" type="button" data-hotel-filter="resort">Resorts</button>
+        <button class="chip" type="button" data-hotel-filter="boutique">Boutique</button>
+        <button class="chip" type="button" data-hotel-filter="city">City hotels</button>
+      </div>
+      <div class="hotel-grid" id="hotelGrid"></div>
+    </section>
+<!-- Roam Coins Section -->
+<section class="section" id="coins">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow dark-eyebrow">TRAVEL MORE, EARN MORE</div>
+      <h2>Your Roam <em>Coins.</em></h2>
+    </div>
+    <p>Earn rewards on eligible bookings and use them on future journeys.</p>
+  </div>
+
+  <div class="rewards-card">
+    <h3>My Coin Balance</h3>
+    <h2 id="coinBalance">0 Coins</h2>
+    <p id="coinMessage">Sign in to view your rewards.</p>
+  </div>
+</section>
+
+<!-- Coupons Section -->
+<section class="section" id="coupons">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow dark-eyebrow">SPECIAL OFFERS</div>
+      <h2>Travel with <em>discounts.</em></h2>
+    </div>
+    <p>Apply a coupon to save on eligible bookings.</p>
+  </div>
+
+  <div class="rewards-card">
+    <h3>Have a coupon code?</h3>
+    <div class="email-row">
+      <input id="couponCode" type="text" placeholder="Enter coupon code">
+      <button class="button button-orange" id="applyCouponBtn" type="button">
+        Apply Coupon
+      </button>
+    </div>
+    <p id="couponMessage" role="status">Try ROAM10 on eligible bookings.</p>
+  </div>
+</section>
+    <section class="promise-section" id="why-us">
+      <div class="promise-image"><div class="image-label">TAKE THE SCENIC ROUTE ↗</div></div>
+      <div class="promise-copy">
+        <div class="eyebrow dark-eyebrow">TRAVEL WITH A LITTLE MORE HEART</div>
+        <h2>Not just places.<br><em>Perspective.</em></h2>
+        <p>We believe the best journeys leave room for the unexpected. Discover local stories, thoughtful itineraries and experiences worth travelling for.</p>
+        <div class="promise-points">
+          <div><span>01</span><div><b>Thoughtfully picked</b><small>Trips designed around the experience, not just the checklist.</small></div></div>
+          <div><span>02</span><div><b>Clear from the start</b><small>See what's included before you request a booking.</small></div></div>
+          <div><span>03</span><div><b>Made for real people</b><small>Flexible inspiration for solo travellers, couples and families.</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div><div class="eyebrow">A NOTE FROM THE ROAD</div><h2>Good places.<br><em>Good stories.</em></h2><p>Get destination ideas and travel inspiration in your inbox.</p></div>
+      <form id="newsletterForm">
+        <label for="emailInput">YOUR EMAIL ADDRESS</label>
+        <div class="email-row"><input type="email" id="emailInput" placeholder="you@example.com" required><button class="button button-cream" type="submit">Keep me inspired ↗</button></div>
+        <small id="newsletterMessage">No spam. Just a little wanderlust.</small>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="#"><span class="brand-mark">r</span><span>roam<span class="brand-light">india</span><small>TRAVEL, YOUR WAY</small></span></a>
+    <p>Made for the curious. Inspired by India.</p>
+    <div class="footer-links"><a href="#destinations">Destinations</a><a href="#packages">Packages</a><a href="#hotels">Hotels</a></div>
+    <small class="disclaimer">Demo website · Sample packages, hotels and prices are illustrative.</small>
+  </footer>
+
+  <!-- Package booking modal -->
+  <div class="modal-backdrop" id="bookingModal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModal" type="button" aria-label="Close">×</button>
+      <div class="eyebrow dark-eyebrow">LET'S MAKE A PLAN</div>
+      <h2 id="modalTitle">Request your trip</h2>
+      <p id="modalDescription" class="modal-description"></p>
+      <form id="bookingForm">
+        <input type="hidden" id="selectedPackageId">
+        <div class="form-row">
+          <label>Full name<input id="customerName" required placeholder="Your name"></label>
+          <label>Email address<input id="customerEmail" type="email" required placeholder="you@example.com"></label>
+        </div>
+        <div class="form-row">
+          <label>Start date<input id="startDate" type="date" required></label>
+          <label>Travellers<select id="bookingTravellers"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+        </div>
+        <label>Anything we should know? (optional)<textarea id="customerNotes" rows="2" placeholder="Preferred activities or questions"></textarea></label>
+        <div class="modal-total"><span>Estimated package total</span><b id="estimatedTotal">—</b></div>
+        <button class="button button-orange full-button" type="submit">Save booking request →</button>
+        <small class="form-note">Demo request only. No payment is taken and no reservation is confirmed.</small>
+      </form>
+    </section>
+  </div>
+
+  <!-- Package details modal -->
+  <div class="modal-backdrop" id="packageModal" aria-hidden="true">
+    <section class="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="packageDetailTitle">
+      <button class="modal-close" id="closePackageModal" type="button" aria-label="Close">×</button>
+      <img id="packageDetailImage" class="detail-image" src="" alt="">
+      <div class="eyebrow dark-eyebrow" id="packageDetailTag"></div>
+      <h2 id="packageDetailTitle">Trip details</h2>
+      <p id="packageDetailMeta"></p>
+      <p id="packageDetailDescription"></p>
+      <h3>Highlights</h3><div id="packageDetailHighlights" class="hotel-amenities"></div>
+      <h3>Sample itinerary</h3><div id="packageDetailItinerary"></div>
+      <div class="form-row">
+        <div><h3>Included</h3><ul id="packageDetailIncludes"></ul></div>
+        <div><h3>Not included</h3><ul id="packageDetailExcludes"></ul></div>
+      </div>
+      <div class="modal-total"><span>Estimated price per person</span><b id="packageDetailPrice"></b></div>
+      <button class="button button-orange full-button" id="packageBookButton" type="button">Request this trip →</button>
+    </section>
+  </div>
+
+  <!-- Hotel details and booking modal -->
+  <div class="modal-backdrop" id="hotelModal" aria-hidden="true">
+    <section class="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="hotelModalTitle">
+      <button class="modal-close" id="closeHotelModal" type="button" aria-label="Close">×</button>
+      <img id="hotelDetailImage" class="detail-image" src="" alt="">
+      <div class="eyebrow dark-eyebrow" id="hotelDetailType"></div>
+      <h2 id="hotelModalTitle">Hotel details</h2>
+      <p id="hotelDetailDescription"></p>
+      <div id="hotelDetailAmenities" class="hotel-amenities"></div>
+      <form id="hotelBookingForm">
+        <h3>Request a stay</h3>
+        <div class="form-row">
+          <label>Full name<input id="hotelCustomerName" required placeholder="Your name"></label>
+          <label>Email address<input id="hotelCustomerEmail" type="email" required placeholder="you@example.com"></label>
+        </div>
+        <div class="form-row">
+          <label>Check-in<input id="hotelCheckIn" type="date" required></label>
+          <label>Check-out<input id="hotelCheckOut" type="date" required></label>
+        </div>
+        <div class="form-row">
+          <label>Guests<select id="hotelGuests"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label>Rooms<select id="hotelRooms"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        </div>
+        <div class="modal-total"><span id="hotelEstimateLabel">Estimated stay total</span><b id="hotelEstimate">—</b></div>
+        <button class="button button-orange full-button" type="submit">Save stay request →</button>
+        <small class="form-note">Demo request only. This is not a confirmed hotel reservation.</small>
+      </form>
+    </section>
+  </div>
+
+  <!-- Sign in and create account modal -->
+  <div class="modal-backdrop" id="authModal" aria-hidden="true">
+    <section class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="modal-close" id="closeAuthModal" type="button" aria-label="Close">×</button>
+      <div class="eyebrow dark-eyebrow">YOUR NEXT JOURNEY STARTS HERE</div>
+      <h2 id="authTitle">Welcome back</h2>
+      <p id="authDescription" class="modal-description">Sign in to your Roam India account.</p>
+      <div class="auth-tabs">
+        <button type="button" id="loginTab" class="active">Sign in</button>
+        <button type="button" id="registerTab">Create account</button>
+      </div>
+      <form id="authForm">
+        <label id="authNameLabel" hidden>Full name<input id="authName" placeholder="Your full name" autocomplete="name"></label>
+        <label>Email address<input id="authEmail" type="email" required placeholder="you@example.com" autocomplete="email"></label>
+      <input
+  id="authPassword"
+  name="password"
+  type="password"
+  placeholder="Enter your password"
+  autocomplete="new-password"
+  required
+  minlength="10"
+  maxlength="72"
+>
+        <button class="button button-orange full-button" id="authSubmit" type="submit">Sign in →</button>
+        <small class="form-note">Use your account credentials. Never share your password or access token.</small>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
