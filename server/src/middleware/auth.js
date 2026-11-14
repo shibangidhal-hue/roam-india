@@ -8,7 +8,11 @@ function requireAuth(req, res, next) {
   }
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
-    req.user = { id: Number(payload.sub), email: payload.email };
+    req.user = {
+  id: Number(payload.sub),
+  email: payload.email,
+  role: payload.role || "customer"
+};
     if (!Number.isSafeInteger(req.user.id) || req.user.id <= 0) {
       return res.status(401).json({ error: 'Invalid authentication token.' });
     }

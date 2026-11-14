@@ -111,7 +111,46 @@ function doSearch(){
  renderPackages(results);$("packages").scrollIntoView({behavior:"smooth"});toast(`${results.length} trip${results.length===1?"":"s"} match your search`);
 }
 $("searchForm").addEventListener("submit",e=>{e.preventDefault();doSearch()});
-document.querySelectorAll(".search-tabs button").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".search-tabs button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");activeMode=btn.dataset.mode;$("destinationInput").placeholder=activeMode==="packages"?"City, state or experience":"Where would you like to go?";$("searchHint").textContent=activeMode==="packages"?"Search trips by destination and budget.":"Explore destinations across every region of India."}));
+document.querySelectorAll(".search-tabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".search-tabs button").forEach(b => {
+      b.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+    activeMode = btn.dataset.mode;
+
+    if (activeMode === "flights" || activeMode === "trains" || activeMode === "buses") {
+      const travelType = activeMode === "buses" ? "bus" :
+                         activeMode === "trains" ? "train" : "flight";
+
+      const travelTab = document.querySelector(
+        `.travel-booking-tabs button[data-travel="${travelType}"]`
+      );
+
+      if (travelTab) {
+        travelTab.click();
+        $("travel-booking").scrollIntoView({ behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (activeMode === "hotels") {
+      $("hotels").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    $("destinationInput").placeholder =
+      activeMode === "packages"
+        ? "City, state or experience"
+        : "Where would you like to go?";
+
+    $("searchHint").textContent =
+      activeMode === "packages"
+        ? "Search trips by destination and budget."
+        : "Explore destinations across every region of India.";
+  });
+});
 document.querySelectorAll(".chip").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".chip").forEach(b=>b.classList.remove("active"));btn.classList.add("active");const f=btn.dataset.filter;renderPackages(f==="all"?packages:packages.filter(p=>p.category===f))}));
 $("showAllDestinations").addEventListener("click",()=>{showAll=!showAll;renderDestinations();if(showAll)$("destinationGrid").scrollIntoView({behavior:"smooth",block:"nearest"})});
 document.addEventListener("click",e=>{
@@ -121,6 +160,33 @@ document.addEventListener("click",e=>{
 });
 $("travellers").addEventListener("change",()=>{if(selectedItem)$("estimatedTotal").textContent=money(selectedItem.price*Number($("travellers").value))});
 $("bookingTravellers").addEventListener("change",()=>{if(selectedItem)$("estimatedTotal").textContent=money(selectedItem.price*Number($("bookingTravellers").value))});
+let appliedBookingCoupon = null;
+
+$("applyBookingCoupon").addEventListener("click", async () => {
+  try {
+    if (!selectedItem) {
+      throw new Error("Please select a package first.");
+    }
+
+    const code = $("bookingCouponCode").value.trim();
+    const travellers = Number($("bookingTravellers").value || 2);
+    const amount = selectedItem.price * travellers;
+
+    const result = await apiRequest("/coupons/validate", {
+      method: "POST",
+      body: JSON.stringify({ code, amount })
+    });
+
+    appliedBookingCoupon = result;
+
+    $("bookingCouponMessage").textContent =
+      `Coupon applied! You saved ${money(result.discount)}.`;
+
+  } catch (error) {
+    appliedBookingCoupon = null;
+    $("bookingCouponMessage").textContent = error.message;
+  }
+});
 $("bookingForm").addEventListener("submit",e=>{
  e.preventDefault();if(!selectedItem)return;
  const booking={reference:"RI-"+Date.now().toString().slice(-8),itemId:selectedItem.id,itemName:selectedItem.name,place:selectedItem.place,price:selectedItem.price,customer:$("customerName").value.trim(),email:$("customerEmail").value.trim(),date:$("startDate").value,travellers:Number($("bookingTravellers").value),notes:$("customerNotes").value.trim(),status:"Request saved",createdAt:new Date().toISOString()};
@@ -213,6 +279,35 @@ function updateAccountButton() {
   }
 }
 
+async function loadCoinBalance() {
+  const balanceElement = $("coinBalance");
+  const messageElement = $("coinMessage");
+
+  if (!getAuthToken()) {
+    if (balanceElement) balanceElement.textContent = "0 Coins";
+    if (messageElement) {
+      messageElement.textContent = "Sign in to view your rewards.";
+    }
+    return;
+  }
+
+  try {
+    const result = await apiRequest("/coins/balance");
+
+    if (balanceElement) {
+      balanceElement.textContent = `${result.balance} Coins`;
+    }
+
+    if (messageElement) {
+      messageElement.textContent = "Your Roam Coins balance.";
+    }
+  } catch (error) {
+    if (messageElement) {
+      messageElement.textContent = error.message;
+    }
+  }
+}
+
 function openAuth(mode = "login") {
   authMode = mode;
   renderAuthMode();
@@ -229,6 +324,9 @@ function closeAuth() {
 
 function renderAuthMode() {
   const isRegister = authMode === "register";
+  const phoneField = $("authPhone");
+  const phoneLabel = $("authPhoneLabel") ||
+    (phoneField ? phoneField.closest("label") || phoneField.parentElement : null);
 
   $("authTitle").textContent = isRegister
     ? "Create your account"
@@ -240,6 +338,15 @@ function renderAuthMode() {
 
   $("authNameLabel").hidden = !isRegister;
   $("authName").required = isRegister;
+
+  if (phoneLabel) phoneLabel.hidden = !isRegister;
+  if (phoneField) phoneField.required = isRegister;
+
+  $("authEmail").placeholder = isRegister
+    ? "Enter your email address"
+    : "Enter email or 10-digit mobile number";
+
+  $("authEmail").required = true;
   $("authPassword").minLength = isRegister ? 10 : 1;
   $("authPassword").autocomplete = isRegister
     ? "new-password"
@@ -251,19 +358,31 @@ function renderAuthMode() {
     : 'Sign in <span>→</span>';
 
   $("loginTab").classList.toggle("active", !isRegister);
-  $("registerTab").classList.toggle("active", isRegister);
-}
+  } // closes renderAuthMode()
+
+$("loginTab").addEventListener("click", () => {
+  authMode = "login";
+  renderAuthMode();
+});
+
+$("registerTab").addEventListener("click", () => {
+  authMode = "register";
+  renderAuthMode();
+});
 
 $("accountBtn").addEventListener("click", () => {
   if (getAuthToken()) {
     localStorage.removeItem("roamIndiaToken");
     localStorage.removeItem("roamIndiaUser");
     updateAccountButton();
+    loadCoinBalance();
     toast("You have signed out.");
   } else {
     openAuth("login");
   }
 });
+
+
 
 $("closeAuthModal").addEventListener("click", closeAuth);
 
@@ -271,20 +390,14 @@ $("authModal").addEventListener("click", e => {
   if (e.target.id === "authModal") closeAuth();
 });
 
-$("loginTab").addEventListener("click", () => {
-    renderAuthMode();
-});
 
-$("registerTab").addEventListener("click", () => {
- authMode = "register";
-  renderAuthMode();
-});
 
 $("authForm").addEventListener("submit", async e => {
   e.preventDefault();
 
   const email = $("authEmail").value.trim().toLowerCase();
-  const password = document.querySelector("#authForm #authPassword").value;
+const phone = $("authPhone") ? $("authPhone").value.replace(/\D/g, "") : "";
+const password = document.querySelector("#authForm #authPassword").value;
   
 
   if (authMode === "register" && (password.trim().length < 10 || password.trim().length > 72)) {
@@ -310,9 +423,15 @@ $("authForm").addEventListener("submit", async e => {
       ? "/auth/register"
       : "/auth/login";
 
-    const payload = authMode === "register"
-      ? { name, email, password }
-      : { email, password };
+    const isMobileLogin = /^[6-9]\d{9}$/.test(email);
+
+const payload = authMode === "register"
+  ? { name, email, phone, password }
+  : {
+      email: isMobileLogin ? "" : email,
+      phone: isMobileLogin ? email : "",
+      password
+    };
 
     const result = await apiRequest(endpoint, {
       method: "POST",
@@ -324,6 +443,7 @@ $("authForm").addEventListener("submit", async e => {
 
     closeAuth();
     updateAccountButton();
+    loadCoinBalance();
 
     toast(
       authMode === "register"
@@ -609,3 +729,118 @@ if (detectButton) {
     );
   });
 }
+
+
+/* ===== Roam India AI Chat Controls ===== */
+
+const aiChatButton = document.getElementById("aiChatButton");
+const aiChatWindow = document.getElementById("aiChatWindow");
+const aiChatClose = document.getElementById("aiChatClose");
+
+if (aiChatButton && aiChatWindow && aiChatClose) {
+  aiChatButton.addEventListener("click", () => {
+    aiChatWindow.hidden = false;
+    aiChatButton.hidden = true;
+  });
+
+  aiChatClose.addEventListener("click", () => {
+    aiChatWindow.hidden = true;
+    aiChatButton.hidden = false;
+  });
+}
+
+
+
+/* ===== Roam India AI Message Sending ===== */
+
+const aiChatForm = document.getElementById("aiChatForm");
+const aiChatInput = document.getElementById("aiChatInput");
+const aiChatMessages = document.getElementById("aiChatMessages");
+
+if (aiChatForm && aiChatInput && aiChatMessages) {
+  aiChatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = aiChatInput.value.trim();
+    if (!message) return;
+
+    const userMessage = document.createElement("div");
+    userMessage.className = "ai-message";
+    userMessage.textContent = message;
+    aiChatMessages.appendChild(userMessage);
+
+    aiChatInput.value = "";
+
+    const loadingMessage = document.createElement("div");
+    loadingMessage.className = "ai-message";
+    loadingMessage.textContent = "Roam India AI is thinking...";
+    aiChatMessages.appendChild(loadingMessage);
+
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+
+    
+    // Free demo replies — no API credits required
+    const text = message.toLowerCase();
+    let reply = "";
+
+    if (text.includes("goa")) {
+      reply = "🌴 Goa is a wonderful choice! For a 3-day trip, explore Baga Beach, Calangute Beach, Fort Aguada and Old Goa. Keep around ₹5,000–₹10,000 per person for a budget trip, excluding travel to Goa.";
+    } else if (text.includes("odisha") || text.includes("bhubaneswar")) {
+      reply = "🌸 Explore Odisha! Visit Bhubaneswar, Puri, Konark Sun Temple and Chilika Lake. A 3-day trip is a lovely way to experience Odisha's culture and beaches.";
+    } else if (text.includes("kashmir")) {
+      reply = "🏔️ Kashmir is beautiful! Visit Srinagar, Dal Lake, Gulmarg and Pahalgam. Plan at least 4–5 days to enjoy the mountains and scenery.";
+    } else if (text.includes("budget") || text.includes("10000") || text.includes("₹")) {
+      reply = "💰 For a budget trip, choose nearby destinations, compare transport options and book accommodation early. Tell me your destination and number of days for a suggested budget.";
+    } else if (text.includes("hello") || text.includes("hi")) {
+      reply = "👋 Hello! Welcome to Roam India. I can help you explore destinations, plan itineraries and estimate travel budgets. Where would you like to go?";
+    } else {
+      reply = "✈️ I'd love to help plan your journey! Try asking me about Goa, Kashmir, Odisha or budget travel. Tell me your destination and trip duration.";
+    }
+
+    loadingMessage.textContent = reply;
+
+
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+  });
+}
+
+
+/* ===== Roam India Travel Booking Tabs ===== */
+
+const travelTabs = document.querySelectorAll(".travel-booking-tabs button");
+
+const travelForms = {
+  train: document.getElementById("trainSearchForm"),
+  bus: document.getElementById("busSearchForm"),
+  flight: document.getElementById("flightSearchForm")
+};
+
+
+travelTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const selectedTravel = tab.dataset.travel;
+    const inlineTravelForms = document.getElementById("inlineTravelForms");
+
+    travelTabs.forEach((button) => {
+      button.classList.toggle("active", button === tab);
+    });
+
+    Object.entries(travelForms).forEach(([type, form]) => {
+      if (!form) return;
+
+      if (type === selectedTravel) {
+        inlineTravelForms.appendChild(form);
+        form.hidden = false;
+      } else {
+        form.hidden = true;
+      }
+    });
+
+    inlineTravelForms.hidden = !travelForms[selectedTravel];
+
+    document.getElementById("travelSearchResults").textContent = "";
+  });
+});
+
+
+/* ===== End Travel Booking Tabs ===== */

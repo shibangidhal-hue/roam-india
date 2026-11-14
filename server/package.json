@@ -4,8 +4,13 @@
   "private": true,
   "description": "Learning backend API for the Roam India tourism platform",
   "main": "src/server.js",
-  "scripts": {"start": "node src/server.js", "dev": "node --watch src/server.js"},
-  "engines": {"node": ">=20"},
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -14,6 +19,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.12.0"
+    "mysql2": "^3.12.0",
+    "openai": "^7.53.0"
   }
 }

@@ -60,9 +60,12 @@
 
     <section class="search-wrap" id="explore">
       <div class="search-tabs">
-        <button type="button" class="active" data-mode="packages">✦ Holiday packages</button>
-        <button type="button" data-mode="destinations">⌖ Explore places</button>
-      </div>
+  <button type="button" data-mode="flights">✈️ Flights</button>
+  <button type="button" data-mode="hotels">🏨 Hotels</button>
+  <button type="button" class="active" data-mode="packages">🌴 Holiday Packages</button>
+  <button type="button" data-mode="trains">🚆 Trains</button>
+  <button type="button" data-mode="buses">🚌 Buses</button>
+</div>
       <form id="searchForm" class="search-panel">
         <label class="search-field">
           <span>WHERE TO?</span>
@@ -82,6 +85,12 @@
           </div>
         </label>
         <label class="search-field">
+  <span>TRAVEL DATE</span>
+  <div class="field-line">📅
+    <input id="travelDate" type="date">
+  </div>
+</label>
+        <label class="search-field">
           <span>YOUR BUDGET</span>
           <div class="field-line">₹
             <select id="budget">
@@ -94,8 +103,100 @@
         </label>
         <button class="button button-orange search-submit" type="submit">Search journeys →</button>
       </form>
+      <div id="inlineTravelForms" class="inline-travel-forms" hidden></div>
       <p class="search-hint" id="searchHint">Popular searches: Goa · Kashmir · Kerala · Rajasthan</p>
-    </section>
+    <div class="location-quick-action">
+  <button id="detectLocationBtn" type="button">
+    📍 Detect My Location
+  </button>
+  <span id="locationMessage" role="status">
+    Find hotels and attractions near you
+  </span>
+</div>
+
+  <div id="locationMap"></div>
+
+<h3>Nearby Places</h3>
+<div id="nearbyPlaces"></div>
+</section>
+
+<!-- ===== Train, Bus and Flight Booking ===== -->
+<section class="section travel-booking-section" id="travel-booking">
+  <div class="section-heading">
+    <div>
+      <div class="eyebrow dark-eyebrow">TRAVEL YOUR WAY</div>
+      <h2>Book your next journey</h2>
+      <p>Explore India by train, bus or flight.</p>
+    </div>
+  </div>
+
+  <div class="travel-booking-card">
+    <div class="travel-booking-tabs">
+      <button type="button" class="active" data-travel="train">🚆 Trains</button>
+      <button type="button" data-travel="bus">🚌 Buses</button>
+      <button type="button" data-travel="flight">✈️ Flights</button>
+    </div>
+
+    <form id="trainSearchForm" class="travel-search-form">
+      <h3>Search Trains</h3>
+      <label>From
+        <input name="from" placeholder="Departure station" required>
+      </label>
+      <label>To
+        <input name="to" placeholder="Arrival station" required>
+      </label>
+      <label>Journey date
+        <input name="date" type="date" required>
+      </label>
+      <label>Class
+        <select name="class">
+          <option value="SL">Sleeper</option>
+          <option value="3A">AC 3 Tier</option>
+          <option value="2A">AC 2 Tier</option>
+          <option value="1A">AC First Class</option>
+        </select>
+      </label>
+      <button class="button button-orange" type="submit">Search Trains</button>
+    </form>
+
+    <form id="busSearchForm" class="travel-search-form" hidden>
+      <h3>Search Buses</h3>
+      <label>From
+        <input name="from" placeholder="Departure city" required>
+      </label>
+      <label>To
+        <input name="to" placeholder="Arrival city" required>
+      </label>
+      <label>Journey date
+        <input name="date" type="date" required>
+      </label>
+      <label>Passengers
+        <input name="passengers" type="number" min="1" value="1" required>
+      </label>
+      <button class="button button-orange" type="submit">Search Buses</button>
+    </form>
+
+    <form id="flightSearchForm" class="travel-search-form" hidden>
+      <h3>Search Flights</h3>
+      <label>From
+        <input name="from" placeholder="Departure airport or city" required>
+      </label>
+      <label>To
+        <input name="to" placeholder="Arrival airport or city" required>
+      </label>
+      <label>Departure date
+        <input name="date" type="date" required>
+      </label>
+      <label>Passengers
+        <input name="passengers" type="number" min="1" value="1" required>
+      </label>
+      <button class="button button-orange" type="submit">Search Flights</button>
+    </form>
+
+    <div id="travelSearchResults" aria-live="polite"></div>
+  </div>
+</section>
+<!-- ===== End Travel Booking ===== -->
 
     <section class="section destinations-section" id="destinations">
       <div class="section-heading">
@@ -108,23 +209,7 @@
       </div>
     </section>
 
-<section id="location-section" class="location-section">
-  <h2>Explore Near You</h2>
-  <p>Discover hotels and attractions around your current location.</p>
 
-  <button id="detectLocationBtn" type="button">
-    📍 Detect My Location
-  </button>
-
-  <p id="locationMessage" role="status">
-    Click the button to find your location.
-  </p>
-
-  <div id="locationMap"></div>
-
-  <h3>Nearby Places</h3>
-  <div id="nearbyPlaces"></div>
-</section>
 
 
     <section class="package-section" id="packages">
@@ -250,6 +335,27 @@
           <label>Travellers<select id="bookingTravellers"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
         </div>
         <label>Anything we should know? (optional)<textarea id="customerNotes" rows="2" placeholder="Preferred activities or questions"></textarea></label>
+        <div class="form-row">
+  <label>
+    Coupon code
+    <input id="bookingCouponCode" type="text" placeholder="Enter coupon code">
+  </label>
+  <button class="button button-orange" id="applyBookingCoupon" type="button">
+    Apply Coupon
+  </button>
+</div>
+
+<p id="bookingCouponMessage" role="status"></p>
+
+<div class="form-row">
+  <label>
+    Use Roam Coins
+    <input id="bookingCoins" type="number" min="0" value="0">
+  </label>
+  <p id="checkoutCoinBalance">Available: 0 Coins</p>
+</div>
+
+<p id="bookingDiscountMessage" role="status"></p>
         <div class="modal-total"><span>Estimated package total</span><b id="estimatedTotal">—</b></div>
         <button class="button button-orange full-button" type="submit">Save booking request →</button>
         <small class="form-note">Demo request only. No payment is taken and no reservation is confirmed.</small>
@@ -320,8 +426,30 @@
       </div>
       <form id="authForm">
         <label id="authNameLabel" hidden>Full name<input id="authName" placeholder="Your full name" autocomplete="name"></label>
-        <label>Email address<input id="authEmail" type="email" required placeholder="you@example.com" autocomplete="email"></label>
-      <input
+        <label>Email or mobile number
+  <input
+    id="authEmail"
+    type="text"
+    inputmode="text"
+    autocomplete="username"
+    required
+    placeholder="Enter email or 10-digit mobile number"
+  >
+</label>
+
+<label id="authPhoneLabel" hidden>
+  Mobile number
+  <input
+    id="authPhone"
+    type="tel"
+    inputmode="numeric"
+    autocomplete="tel"
+    placeholder="Enter your 10-digit mobile number"
+    maxlength="10"
+  >
+</label>
+
+<input
   id="authPassword"
   name="password"
   type="password"
@@ -332,12 +460,42 @@
   maxlength="72"
 >
         <button class="button button-orange full-button" id="authSubmit" type="submit">Sign in →</button>
+       <p class="forgot-password">
+  <a href="#" id="forgotPasswordLink">Forgot password?</a>
+</p>
         <small class="form-note">Use your account credentials. Never share your password or access token.</small>
       </form>
     </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Roam India AI Travel Assistant -->
+<button id="aiChatButton" class="ai-chat-button" type="button">
+  ✨ Ask AI
+</button>
+
+<div id="aiChatWindow" class="ai-chat-window" hidden>
+  <div class="ai-chat-header">
+    <div>
+      <strong>Roam India AI</strong>
+      <small>Your personal travel assistant</small>
+    </div>
+    <button id="aiChatClose" type="button" aria-label="Close chat">×</button>
+  </div>
+
+  <div id="aiChatMessages" class="ai-chat-messages">
+    <div class="ai-message">
+      Hello! 👋 Welcome to Roam India. Where would you love to travel?
+    </div>
+  </div>
+
+  <form id="aiChatForm" class="ai-chat-form">
+    <input id="aiChatInput" type="text"
+      placeholder="Ask me about your next trip..." required>
+    <button type="submit">Send</button>
+  </form>
+</div>
 
   <script src="app.js"></script>
 </body>
